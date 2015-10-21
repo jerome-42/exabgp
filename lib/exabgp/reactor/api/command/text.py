@@ -119,7 +119,8 @@ def show_routes_extensive (self, reactor, service, command):
 			neighbor = reactor.configuration.neighbors[key]
 			for change in list(neighbor.rib.outgoing.sent_changes()):
 				reactor.answer(service,'neighbor %s %s' % (neighbor.name(),change.extensive()))
-				yield True
+                        reactor.answer(service,'end')
+                        yield True
 
 	reactor.plan(callback(),'show_routes_extensive')
 	return True
@@ -170,14 +171,18 @@ def flush_route (self, reactor, service, command):
 		peers = reactor.match_neighbors(descriptions)
 		if not peers:
 			self.logger.reactor('no neighbor matching the command : %s' % command,'warning')
+                        reactor.answer(service,'error')
 			return False
 		reactor.plan(callback(self,peers),'flush_route')
+                reactor.answer(service,'end')
 		return True
 	except ValueError:
 		self.logger.reactor('issue parsing the command')
+                reactor.answer(service,'error')
 		return False
 	except IndexError:
 		self.logger.reactor('issue parsing the command')
+                reactor.answer(service,'error')
 		return False
 
 
